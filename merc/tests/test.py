@@ -1,7 +1,7 @@
 import unittest
 import sys
 
-from run_process import RunProcess, TimeExceededError
+from merc import RunProcess, TimeExceededError
 
 class TestRunProcess(unittest.TestCase):
 
