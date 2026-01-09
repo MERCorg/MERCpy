@@ -6,6 +6,8 @@ import concurrent.futures
 import sys
 import time
 
+from typing import Callable
+
 
 class RunProcess:
     stdout = ""
@@ -16,6 +18,7 @@ class RunProcess:
         self,
         tool: str,
         arguments: list[str],
+        read_stdout: Callable[[str], None] | None = None,
         env: dict[str, str] | None = None,
         max_time: int = sys.maxsize,
         max_memory: int = sys.maxsize,
@@ -25,12 +28,14 @@ class RunProcess:
         """
 
         try:
+            before = time.perf_counter()
             with subprocess.Popen(
                 [tool] + arguments,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 env=env,
+                bufsize=1,
             ) as proc:
                 self._user_time = 0
                 self._max_memory_used = 0
@@ -67,16 +72,20 @@ class RunProcess:
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                     future = executor.submit(enforce_limits, proc)
-                    stdout, _ = proc.communicate()
+
+                    # Print all output (stdout + stderr merged)
+                    if proc.stdout:
+                        for line in proc.stdout:
+                            if read_stdout:
+                                read_stdout(line)
 
                     # Wait for termination
                     future.result()
 
-                    self.stdout = stdout
+                    # Use the realtime to measure user time more accurately
+                    self._user_time = time.perf_counter() - before
 
-                self.returncode = proc.returncode
                 if proc.returncode != 0:
-                    print(self.stderr)
                     raise ToolRuntimeError(
                         f"Tool {tool} {arguments} ended with return code {proc.returncode}"
                     )
