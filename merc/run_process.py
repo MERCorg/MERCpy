@@ -77,7 +77,7 @@ class RunProcess:
                     if proc.stdout:
                         for line in proc.stdout:
                             if read_stdout:
-                                read_stdout(line)
+                                read_stdout(line.rstrip('\n'))
 
                     # Wait for termination
                     future.result()
