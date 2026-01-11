@@ -54,12 +54,18 @@ class RunProcess:
                     try:
                         process = psutil.Process(proc.pid)
                         while proc.returncode is None:
-                            m = process.memory_info()
-
-                            # Update max memory used
-                            self._max_memory_used = max(
-                                self._max_memory_used, m.rss / 1024 / 1024
-                            )
+                            m = process.memory_full_info()
+                            
+                            if "uss" in m:
+                                # Use USS if available (Linux)
+                                self._max_memory_used = max(
+                                    self._max_memory_used, m.uss / 1024 / 1024
+                                )
+                            else:
+                                # Update max memory used
+                                self._max_memory_used = max(
+                                    self._max_memory_used, m.rss / 1024 / 1024
+                                )
 
                             if self._max_memory_used > max_memory:
                                 kill_all(process)
@@ -82,7 +88,7 @@ class RunProcess:
 
                     # Process the output while the process is running
                     if proc.stdout:
-                        for line in proc.stdout:
+                        for line in proc.stdout.readlines():
                             if read_stdout:
                                 read_stdout(line.rstrip("\n"))
                     

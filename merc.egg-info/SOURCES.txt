@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+merc/__init__.py
+merc/logger.py
+merc/run_process.py
+merc.egg-info/PKG-INFO
+merc.egg-info/SOURCES.txt
+merc.egg-info/dependency_links.txt
+merc.egg-info/requires.txt
+merc.egg-info/top_level.txt
+merc/tests/test.py

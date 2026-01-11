@@ -1,0 +1,21 @@
+[project]
+name = "merc"
+version = "0.1.0"
+description = "MkDocs plugin to render embedded math using LaTeX."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "Maurice Laveaux", email = "m.laveaux@tue.nl"}]
+license = "BSL-1.0"
+license-files = ["LICENSE"]
+dependencies = ["psutil==7.0.0"]
+
+[project.urls]
+Repository = "https://github.com/MERCorg/merc-py"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["merc*"]
