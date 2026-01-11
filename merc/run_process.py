@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
-import psutil
+# pylint: disable=pointless-statement
+# pylint: disable=missing-docstring
+# pylint: disable=line-too-long
+
 import subprocess
 import concurrent.futures
 import sys
 import time
 
 from typing import Callable
+
+import psutil
 
 
 class RunProcess:
@@ -64,11 +69,9 @@ class RunProcess:
                             self._user_time += 0.1
                             time.sleep(0.1)
 
-                        return process
-
                     except psutil.NoSuchProcess as _:
                         # The tool finished before we could acquire the pid
-                        None
+                        None  # type: ignore
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                     future = executor.submit(enforce_limits, proc)
@@ -77,13 +80,16 @@ class RunProcess:
                     if proc.stdout:
                         for line in proc.stdout:
                             if read_stdout:
-                                read_stdout(line.rstrip('\n'))
-
+                                read_stdout(line.rstrip("\n"))
+                    
                     # Wait for termination
                     future.result()
 
-                    # Use the realtime to measure user time more accurately
-                    self._user_time = time.perf_counter() - before
+                # At this point the process already terminated if enforce_limits didn't raise a `NoSuchProcess` exception
+                proc.wait()
+
+                # Use the realtime to measure user time more accurately
+                self._user_time = time.perf_counter() - before
 
                 if proc.returncode != 0:
                     raise ToolRuntimeError(
