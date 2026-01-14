@@ -88,17 +88,17 @@ class RunProcess:
 
                     # Process the output while the process is running
                     if proc.stdout:
-                        for line in proc.stdout.readlines():
+                        for line in proc.stdout:
                             if read_stdout:
                                 read_stdout(line.rstrip("\n"))
                     
-                    # EOF was reached, wait for process to terminate (if it hasn't already)
+                    # EOF was reached, wait for process to terminate (without this the returncode is never set)
                     proc.wait()
 
                     # Wait for the limit enforcement thread to finish
                     future.result()
 
-                # Use the realtime to measure user time more accurately
+                # Measure the real time since its the most accurate
                 self._user_time = time.perf_counter() - before
 
                 if proc.returncode != 0:
