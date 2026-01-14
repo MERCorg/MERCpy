@@ -30,7 +30,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install .
 
       - name: Run tests
-        run: python -m unittest discover -s merc/tests
+        run: python -m unittest discover -s ./merc/tests
