@@ -46,7 +46,7 @@ class RunProcess:
                 text=True,
                 bufsize=1,
             ) as proc:
-                self._user_time = 0
+                self._time_used = 0
                 self._max_memory_used = 0
 
                 # Start a thread to limit the process memory and time usage.
@@ -73,11 +73,10 @@ class RunProcess:
                                     tool, self._max_memory_used, max_memory
                                 )
 
-                            if self._user_time > max_time:
+                            if self._time_used > max_time:
                                 kill_all(process)
-                                raise TimeExceededError(tool, self._user_time, max_time)
-                            self._user_time += 0.1
-                            time.sleep(0.1)
+                                raise TimeExceededError(tool, self._time_used, max_time)
+                            self._time_used = time.perf_counter() - before
 
                     except psutil.NoSuchProcess as _:
                         # The tool finished before we could acquire the pid
@@ -99,7 +98,7 @@ class RunProcess:
                     future.result()
 
                 # Measure the real time since its the most accurate
-                self._user_time = time.perf_counter() - before
+                self._time_used = time.perf_counter() - before
 
                 if proc.returncode != 0:
                     raise ToolRuntimeError(
@@ -111,10 +110,12 @@ class RunProcess:
 
     @property
     def user_time(self):
-        return self._user_time
+        """Returns the (real) time used by the process in seconds."""
+        return self._time_used
 
     @property
     def max_memory(self):
+        """Returns the maximum resident set memory used by the process in MB."""
         return self._max_memory_used
 
 
